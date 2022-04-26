@@ -36,7 +36,7 @@ for i in range(2):
     msg, add = s.recvfrom(1024)
     l.append(add[1])
     print(add[1])
-prediction2 = 2 * l[1] - l[0]
+prediction2 = 2 * l[3] - l[2]
 print('prediction2:', prediction2)
 
 # msg, add = s.recvfrom(1024)
@@ -50,3 +50,4 @@ print('prediction2:', prediction2)
 conn2.sendall(str(prediction1).encode())
 conn1.sendall(str(prediction2).encode())
 
+tcp_sock.close()
