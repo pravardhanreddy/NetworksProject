@@ -1,10 +1,10 @@
+import requests
+import time
 import socket
 import threading
-import time
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-HOST = "103.228.33.114"  # The server's hostname or IP address
-PORT = 8443  # The port used by the server
+
 SRC_PORT  = 50002
 PEER_PORT = 50001
 
@@ -20,23 +20,28 @@ def keep_listening(listener, chacha):
         time.sleep(0.1)
 
 
-# Signalling Server Communication
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    r = s.recv(1024) # Connect and get first message
-    print(r.decode())
-    print('Waiting to receive Keys')
-    r = s.recv(1024) # receive the keys
-    key = r[:32]
-    nonce = r[32:44]
-    aad = r[44:71]
-    chacha = ChaCha20Poly1305(key)
-    PEER_IP = r[71:].decode()
-    print('Keys received, waiting for IP')
-    print(PEER_IP)
-    s.close()
+response = requests.get('https://signal.pravardhan-reddy5-1.tk/register')
+r = response.content
+key = r[:32]
+nonce = r[32:44]
+aad = r[44:]
+chacha = ChaCha20Poly1305(key)
+print('key:', key)
+print('nonce:', nonce)
+print('aad:', aad)
 
-# Punch a hole
+PEER_IP = ''
+while True:
+    response = requests.get('https://signal.pravardhan-reddy5-1.tk/connect')
+    if response.content == b'wait':
+        print('waiting...')
+        time.sleep(2)
+    else:
+        PEER_IP = response.content.decode()
+        break
+
+print(PEER_IP)
+
 listener = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 listener.bind(('0.0.0.0', PEER_PORT))
 listener.sendto(b'Punch Hole', (PEER_IP, SRC_PORT))
